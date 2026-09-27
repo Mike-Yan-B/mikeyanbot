@@ -124,10 +124,10 @@ def cmd_start(message):
     user_states.pop(message.chat.id, None)
     name = message.from_user.first_name or "друг"
 
-    text = (
-        f"👋 <b>Привет, {name}!</b>\n\n"
-        f"Добро пожаловать в <b>AmyStyle</b> 🌸\n\n"
-        f"Я — бот-помощник веб-разработчика <b>Майка Яна</b>.\n"
+  text = (
+    f"👋 <b>Привет, {name}!</b>\n\n"
+    f"Добро пожаловать в <b>Mike Yan</b> 💼\n\n"
+    f"Я — бот-помощник веб-разработчика <b>Майка Яна</b>.\n"
         f"Помогу тебе:\n\n"
         f"🌐 Заказать <b>сайт</b> — от 1500 ₽\n"
         f"🤖 Заказать <b>Telegram-бота</b> — от 1000 ₽\n"
