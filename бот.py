@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-🤖 AmyStyle Pro Bot — заказ сайтов, Telegram-ботов и презентаций
+🤖 Mike Yan Bot — заказ сайтов, Telegram-ботов и презентаций
 Автор: Майк Ян
 Версия: 2.0
 """
@@ -23,23 +23,22 @@ YOUR_CHAT_ID = 6107364623
 PHOTO_SIMPLE_SITE = "price_simple.jpg"
 PHOTO_BOT = "price_bot.jpg"
 PHOTO_PRESENTATION = "price_presentation.jpg"
-PHOTO_WELCOME = "welcome.jpg"  # опционально — баннер приветствия
+PHOTO_WELCOME = "welcome.jpg"
 
 # 📁 Файл для сохранения заявок
 ORDERS_FILE = "orders.json"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# Хранилище состояний анкет пользователей
-user_states = {}   # {chat_id: {"step": ..., "data": {...}}}
+# Хранилище состояний анкет
+user_states = {}
 
 
 # ============================================================
 #  УТИЛИТЫ
 # ============================================================
 
-def save_order(order: dict):
-    """Сохраняет заявку в JSON-файл"""
+def save_order(order):
     orders = []
     if os.path.exists(ORDERS_FILE):
         try:
@@ -52,12 +51,11 @@ def save_order(order: dict):
         json.dump(orders, f, ensure_ascii=False, indent=2)
 
 
-def notify_admin(text: str):
-    """Отправляет уведомление владельцу"""
+def notify_admin(text):
     try:
         bot.send_message(YOUR_CHAT_ID, text, parse_mode="HTML")
     except Exception as e:
-        print(f"⚠️ Не удалось уведомить админа: {e}")
+        print("Не удалось уведомить админа: " + str(e))
 
 
 # ============================================================
@@ -65,7 +63,6 @@ def notify_admin(text: str):
 # ============================================================
 
 def main_menu():
-    """Главное меню (Reply-кнопки)"""
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     kb.add(
         types.KeyboardButton("🛍 Услуги и цены"),
@@ -87,7 +84,6 @@ def main_menu():
 
 
 def services_menu():
-    """Инлайн-меню услуг"""
     kb = types.InlineKeyboardMarkup(row_width=1)
     kb.add(
         types.InlineKeyboardButton("🌐 Сайты — от 1500 ₽", callback_data="svc_site"),
@@ -99,14 +95,12 @@ def services_menu():
 
 
 def back_menu():
-    """Кнопка возврата в главное меню"""
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton("◀️ В меню", callback_data="back_main"))
     return kb
 
 
 def order_confirm_menu():
-    """Меню подтверждения заявки"""
     kb = types.InlineKeyboardMarkup(row_width=2)
     kb.add(
         types.InlineKeyboardButton("✅ Отправить", callback_data="order_send"),
@@ -124,30 +118,38 @@ def cmd_start(message):
     user_states.pop(message.chat.id, None)
     name = message.from_user.first_name or "друг"
 
-  text = (
-    f"👋 <b>Привет, {name}!</b>\n\n"
-    f"Добро пожаловать в <b>Mike Yan</b> 💼\n\n"
-    f"Я — бот-помощник веб-разработчика <b>Майка Яна</b>.\n"
-        f"Помогу тебе:\n\n"
-        f"🌐 Заказать <b>сайт</b> — от 1500 ₽\n"
-        f"🤖 Заказать <b>Telegram-бота</b> — от 1000 ₽\n"
-        f"🎞 Заказать <b>презентацию</b> — от 800 ₽\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━━\n"
-        f"💡 <i>30+ успешных проектов</i>\n"
-        f"⚡️ <i>Быстрые сроки — от 1 дня</i>\n"
-        f"🛠 <i>Поддержка после запуска</i>\n"
-        f"━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"Выбери действие в меню ниже 👇"
+    text = (
+        "👋 <b>Привет, " + name + "!</b>\n\n"
+        "Добро пожаловать в <b>Mike Yan</b> 💼\n\n"
+        "Я — бот-помощник веб-разработчика <b>Майка Яна</b>.\n"
+        "Помогу тебе:\n\n"
+        "🌐 Заказать <b>сайт</b> — от 1500 ₽\n"
+        "🤖 Заказать <b>Telegram-бота</b> — от 1000 ₽\n"
+        "🎞 Заказать <b>презентацию</b> — от 800 ₽\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
+        "💡 <i>30+ успешных проектов</i>\n"
+        "⚡️ <i>Быстрые сроки — от 1 дня</i>\n"
+        "🛠 <i>Поддержка после запуска</i>\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "Выбери действие в меню ниже 👇"
     )
 
     try:
         with open(PHOTO_WELCOME, "rb") as photo:
-            bot.send_photo(message.chat.id, photo,
-                           caption=text, parse_mode="HTML",
-                           reply_markup=main_menu())
+            bot.send_photo(
+                message.chat.id,
+                photo,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=main_menu()
+            )
     except FileNotFoundError:
-        bot.send_message(message.chat.id, text, parse_mode="HTML",
-                         reply_markup=main_menu())
+        bot.send_message(
+            message.chat.id,
+            text,
+            parse_mode="HTML",
+            reply_markup=main_menu()
+        )
 
 
 @bot.message_handler(commands=["help"])
@@ -157,15 +159,16 @@ def cmd_help(message):
 
 @bot.message_handler(commands=["menu"])
 def cmd_menu(message):
-    bot.send_message(message.chat.id, "🏠 Главное меню:",
-                     reply_markup=main_menu())
+    bot.send_message(message.chat.id, "🏠 Главное меню:", reply_markup=main_menu())
 
 
 @bot.message_handler(commands=["myid"])
 def cmd_myid(message):
-    bot.send_message(message.chat.id,
-                     f"Ваш chat_id: <code>{message.chat.id}</code>",
-                     parse_mode="HTML")
+    bot.send_message(
+        message.chat.id,
+        "Ваш chat_id: <code>" + str(message.chat.id) + "</code>",
+        parse_mode="HTML"
+    )
 
 
 # ============================================================
@@ -174,12 +177,12 @@ def cmd_myid(message):
 
 @bot.message_handler(func=lambda m: m.text == "🛍 Услуги и цены")
 def btn_services(message):
-    text = (
-        "🛍 <b>Услуги и цены</b>\n\n"
-        "Выберите категорию — покажу цены и примеры 👇"
+    bot.send_message(
+        message.chat.id,
+        "🛍 <b>Услуги и цены</b>\n\nВыберите категорию — покажу цены и примеры 👇",
+        parse_mode="HTML",
+        reply_markup=services_menu()
     )
-    bot.send_message(message.chat.id, text, parse_mode="HTML",
-                     reply_markup=services_menu())
 
 
 @bot.message_handler(func=lambda m: m.text == "📸 Портфолио")
@@ -196,16 +199,13 @@ def btn_portfolio(message):
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton("📝 Оставить заявку", callback_data="start_order"))
 
-    # Пытаемся отправить фото, если есть
-    sent = False
     for photo_file in [PHOTO_SIMPLE_SITE, PHOTO_BOT, PHOTO_PRESENTATION]:
         if os.path.exists(photo_file):
             try:
                 with open(photo_file, "rb") as p:
                     bot.send_photo(message.chat.id, p)
-                sent = True
             except Exception as e:
-                print(f"Ошибка фото {photo_file}: {e}")
+                print("Ошибка фото " + photo_file + ": " + str(e))
 
     bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=kb)
 
@@ -235,7 +235,7 @@ def btn_reviews(message):
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton(
         "✉️ Написать отзыв",
-        url=f"https://t.me/{YOUR_USERNAME.lstrip('@')}"
+        url="https://t.me/" + YOUR_USERNAME.lstrip("@")
     ))
     bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=kb)
 
@@ -258,8 +258,7 @@ def btn_faq(message):
         "━━━━━━━━━━━━━━━━━━━━━\n"
         "Не нашёл ответ? Жми <b>📞 Связаться</b>!"
     )
-    bot.send_message(message.chat.id, text, parse_mode="HTML",
-                     reply_markup=back_menu())
+    bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=back_menu())
 
 
 @bot.message_handler(func=lambda m: m.text == "🎁 Акции")
@@ -283,7 +282,7 @@ def btn_promo(message):
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton(
         "✉️ Воспользоваться акцией",
-        url=f"https://t.me/{YOUR_USERNAME.lstrip('@')}"
+        url="https://t.me/" + YOUR_USERNAME.lstrip("@")
     ))
     bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=kb)
 
@@ -293,15 +292,15 @@ def btn_contact(message):
     text = (
         "📞 <b>Связаться со мной</b>\n"
         "━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"👤 Telegram: <b>{YOUR_USERNAME}</b>\n"
-        f"💬 Отвечаю в течение 15–30 минут\n\n"
-        f"Напишите, что нужно — обсудим детали и сроки! 🚀"
+        "👤 Telegram: <b>" + YOUR_USERNAME + "</b>\n"
+        "💬 Отвечаю в течение 15–30 минут\n\n"
+        "Напишите, что нужно — обсудим детали и сроки! 🚀"
     )
 
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton(
         "✉️ Написать в Telegram",
-        url=f"https://t.me/{YOUR_USERNAME.lstrip('@')}"
+        url="https://t.me/" + YOUR_USERNAME.lstrip("@")
     ))
     bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=kb)
 
@@ -324,8 +323,8 @@ def btn_about(message):
         "• Telegram-боты любой сложности\n"
         "• Презентации для бизнеса и учёбы\n\n"
         "━━━━━━━━━━━━━━━━━━━━━\n"
-        f"🔗 <b>Связь:</b> {YOUR_USERNAME}\n"
-        f"⏱ <b>Ответ:</b> 15–30 минут"
+        "🔗 <b>Связь:</b> " + YOUR_USERNAME + "\n"
+        "⏱ <b>Ответ:</b> 15–30 минут"
     )
     bot.send_message(message.chat.id, text, parse_mode="HTML")
 
@@ -340,8 +339,16 @@ def handle_callback(call):
 
     if data == "back_main":
         bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, "🏠 Главное меню:",
-                         reply_markup=main_menu())
+        bot.send_message(call.message.chat.id, "🏠 Главное меню:", reply_markup=main_menu())
+
+    elif data == "back_services":
+        bot.answer_callback_query(call.id)
+        bot.send_message(
+            call.message.chat.id,
+            "🛍 <b>Услуги и цены</b>\n\nВыберите категорию:",
+            parse_mode="HTML",
+            reply_markup=services_menu()
+        )
 
     elif data == "svc_site":
         send_prices_sites(call.message)
@@ -377,9 +384,7 @@ def handle_callback(call):
 
     elif data == "order_cancel":
         user_states.pop(call.message.chat.id, None)
-        bot.send_message(call.message.chat.id,
-                         "❌ Заявка отменена.",
-                         reply_markup=main_menu())
+        bot.send_message(call.message.chat.id, "❌ Заявка отменена.", reply_markup=main_menu())
         bot.answer_callback_query(call.id, "Отменено")
 
 
@@ -423,11 +428,15 @@ def send_prices_sites(message):
 
     try:
         with open(PHOTO_SIMPLE_SITE, "rb") as photo:
-            bot.send_photo(message.chat.id, photo, caption=text,
-                           parse_mode="HTML", reply_markup=kb)
+            bot.send_photo(
+                message.chat.id,
+                photo,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=kb
+            )
     except FileNotFoundError:
-        bot.send_message(message.chat.id, text, parse_mode="HTML",
-                         reply_markup=kb)
+        bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=kb)
 
 
 def send_prices_bots(message):
@@ -460,11 +469,15 @@ def send_prices_bots(message):
 
     try:
         with open(PHOTO_BOT, "rb") as photo:
-            bot.send_photo(message.chat.id, photo, caption=text,
-                           parse_mode="HTML", reply_markup=kb)
+            bot.send_photo(
+                message.chat.id,
+                photo,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=kb
+            )
     except FileNotFoundError:
-        bot.send_message(message.chat.id, text, parse_mode="HTML",
-                         reply_markup=kb)
+        bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=kb)
 
 
 def send_prices_presentations(message):
@@ -498,24 +511,19 @@ def send_prices_presentations(message):
 
     try:
         with open(PHOTO_PRESENTATION, "rb") as photo:
-            bot.send_photo(message.chat.id, photo, caption=text,
-                           parse_mode="HTML", reply_markup=kb)
+            bot.send_photo(
+                message.chat.id,
+                photo,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=kb
+            )
     except FileNotFoundError:
-        bot.send_message(message.chat.id, text, parse_mode="HTML",
-                         reply_markup=kb)
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "back_services")
-def back_to_services(call):
-    bot.answer_callback_query(call.id)
-    bot.send_message(call.message.chat.id,
-                     "🛍 <b>Услуги и цены</b>\n\nВыберите категорию:",
-                     parse_mode="HTML",
-                     reply_markup=services_menu())
+        bot.send_message(message.chat.id, text, parse_mode="HTML", reply_markup=kb)
 
 
 # ============================================================
-#  АНКЕТА ЗАКАЗА (FSM)
+#  АНКЕТА ЗАКАЗА
 # ============================================================
 
 STEPS = {
@@ -529,7 +537,6 @@ STEPS = {
 
 
 def start_order_form(message, kind=None):
-    """Начинает анкету заказа"""
     chat_id = message.chat.id
     user_states[chat_id] = {
         "step": "kind" if not kind else "name",
@@ -539,20 +546,24 @@ def start_order_form(message, kind=None):
     if kind:
         kind_ru = {"site": "Сайт", "bot": "Telegram-бот",
                    "presentation": "Презентация"}.get(kind, "Услуга")
-        bot.send_message(chat_id,
-                         f"📝 <b>Оформление заявки</b>\n\n"
-                         f"Услуга: <b>{kind_ru}</b>\n\n"
-                         f"{STEPS['name']}",
-                         parse_mode="HTML",
-                         reply_markup=types.ReplyKeyboardRemove())
+        bot.send_message(
+            chat_id,
+            "📝 <b>Оформление заявки</b>\n\n"
+            "Услуга: <b>" + kind_ru + "</b>\n\n" + STEPS["name"],
+            parse_mode="HTML",
+            reply_markup=types.ReplyKeyboardRemove()
+        )
     else:
         kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
         kb.add(types.KeyboardButton("🌐 Сайт"))
         kb.add(types.KeyboardButton("🤖 Telegram-бот"))
         kb.add(types.KeyboardButton("🎞 Презентация"))
-        bot.send_message(chat_id,
-                         f"📝 <b>Оформление заявки</b>\n\n{STEPS['kind']}",
-                         parse_mode="HTML", reply_markup=kb)
+        bot.send_message(
+            chat_id,
+            "📝 <b>Оформление заявки</b>\n\n" + STEPS["kind"],
+            parse_mode="HTML",
+            reply_markup=kb
+        )
 
 
 @bot.message_handler(func=lambda m: user_states.get(m.chat.id, {}).get("step") == "kind")
@@ -572,8 +583,7 @@ def step_kind(message):
 
     user_states[chat_id]["data"]["kind"] = kind
     user_states[chat_id]["step"] = "name"
-    bot.send_message(chat_id, STEPS["name"],
-                     reply_markup=types.ReplyKeyboardRemove())
+    bot.send_message(chat_id, STEPS["name"], reply_markup=types.ReplyKeyboardRemove())
 
 
 @bot.message_handler(func=lambda m: user_states.get(m.chat.id, {}).get("step") == "name")
@@ -619,53 +629,49 @@ def step_deadline(message):
                "presentation": "🎞 Презентация"}.get(data.get("kind"), "—")
 
     preview = (
-        f"📋 <b>Проверьте заявку</b>\n"
-        f"━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"🎯 Услуга: <b>{kind_ru}</b>\n"
-        f"👤 Имя: <b>{data.get('name', '—')}</b>\n"
-        f"📞 Контакт: <b>{data.get('contact', '—')}</b>\n"
-        f"📝 Задача: {data.get('desc', '—')}\n"
-        f"💰 Бюджет: <b>{data.get('budget', '—')}</b>\n"
-        f"⏱ Сроки: <b>{data.get('deadline', '—')}</b>\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━━\n"
-        f"Всё верно? Нажмите <b>✅ Отправить</b>"
+        "📋 <b>Проверьте заявку</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "🎯 Услуга: <b>" + kind_ru + "</b>\n"
+        "👤 Имя: <b>" + str(data.get("name", "—")) + "</b>\n"
+        "📞 Контакт: <b>" + str(data.get("contact", "—")) + "</b>\n"
+        "📝 Задача: " + str(data.get("desc", "—")) + "\n"
+        "💰 Бюджет: <b>" + str(data.get("budget", "—")) + "</b>\n"
+        "⏱ Сроки: <b>" + str(data.get("deadline", "—")) + "</b>\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
+        "Всё верно? Нажмите <b>✅ Отправить</b>"
     )
-    bot.send_message(chat_id, preview, parse_mode="HTML",
-                     reply_markup=order_confirm_menu())
+    bot.send_message(chat_id, preview, parse_mode="HTML", reply_markup=order_confirm_menu())
 
 
 def finish_order(message):
-    """Отправляет заявку админу"""
     chat_id = message.chat.id
     if chat_id not in user_states:
         return
 
     data = user_states[chat_id]["data"]
     user = message.from_user
-    username = f"@{user.username}" if user.username else "без username"
+    username = "@" + user.username if user.username else "без username"
 
     kind_ru = {"site": "🌐 Сайт", "bot": "🤖 Telegram-бот",
                "presentation": "🎞 Презентация"}.get(data.get("kind"), "—")
 
-    # Уведомление админу
     order_text = (
-        f"🔔 <b>НОВАЯ ЗАЯВКА!</b>\n"
-        f"━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"🎯 Услуга: <b>{kind_ru}</b>\n"
-        f"👤 Имя: <b>{data.get('name', '—')}</b>\n"
-        f"📞 Контакт: <b>{data.get('contact', '—')}</b>\n"
-        f"📝 Задача: {data.get('desc', '—')}\n"
-        f"💰 Бюджет: <b>{data.get('budget', '—')}</b>\n"
-        f"⏱ Сроки: <b>{data.get('deadline', '—')}</b>\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━━\n"
-        f"🔗 Username: {username}\n"
-        f"🆔 chat_id: <code>{user.id}</code>\n"
-        f"🔗 <a href='tg://user?id={user.id}'>Написать клиенту</a>\n"
-        f"🕐 {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        "🔔 <b>НОВАЯ ЗАЯВКА!</b>\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "🎯 Услуга: <b>" + kind_ru + "</b>\n"
+        "👤 Имя: <b>" + str(data.get("name", "—")) + "</b>\n"
+        "📞 Контакт: <b>" + str(data.get("contact", "—")) + "</b>\n"
+        "📝 Задача: " + str(data.get("desc", "—")) + "\n"
+        "💰 Бюджет: <b>" + str(data.get("budget", "—")) + "</b>\n"
+        "⏱ Сроки: <b>" + str(data.get("deadline", "—")) + "</b>\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
+        "🔗 Username: " + username + "\n"
+        "🆔 chat_id: <code>" + str(user.id) + "</code>\n"
+        "🔗 <a href='tg://user?id=" + str(user.id) + "'>Написать клиенту</a>\n"
+        "🕐 " + datetime.now().strftime("%d.%m.%Y %H:%M")
     )
     notify_admin(order_text)
 
-    # Сохраняем в файл
     save_order({
         "time": datetime.now().isoformat(),
         "user_id": user.id,
@@ -678,16 +684,14 @@ def finish_order(message):
         "deadline": data.get("deadline"),
     })
 
-    # Подтверждение клиенту
     bot.send_message(
         chat_id,
-        f"✅ <b>Заявка отправлена!</b>\n\n"
-        f"Спасибо, {data.get('name', '')}! 🎉\n\n"
-        f"Я получил вашу заявку и свяжусь с вами "
-        f"в течение 15–30 минут.\n\n"
-        f"━━━━━━━━━━━━━━━━━━━━━\n"
-        f"💬 Хотите ускорить? Напишите мне:\n"
-        f"👉 <b>{YOUR_USERNAME}</b>",
+        "✅ <b>Заявка отправлена!</b>\n\n"
+        "Спасибо, " + str(data.get("name", "")) + "! 🎉\n\n"
+        "Я получил вашу заявку и свяжусь с вами в течение 15–30 минут.\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
+        "💬 Хотите ускорить? Напишите мне:\n"
+        "👉 <b>" + YOUR_USERNAME + "</b>",
         parse_mode="HTML",
         reply_markup=main_menu()
     )
@@ -696,30 +700,30 @@ def finish_order(message):
 
 
 # ============================================================
-#  ЛЮБОЙ ДРУГОЙ ТЕКСТ (вне анкеты)
+#  ЛЮБОЙ ДРУГОЙ ТЕКСТ
 # ============================================================
 
 @bot.message_handler(content_types=["text"])
 def fallback_text(message):
     user = message.from_user
-    username = f"@{user.username}" if user.username else "без username"
+    username = "@" + user.username if user.username else "без username"
 
     bot.send_message(
         message.chat.id,
         "✅ <b>Сообщение получено!</b>\n\n"
         "Передал его разработчику — скоро ответит.\n"
-        f"Хотите быстрее? Напишите напрямую: <b>{YOUR_USERNAME}</b>\n\n"
+        "Хотите быстрее? Напишите напрямую: <b>" + YOUR_USERNAME + "</b>\n\n"
         "Или выберите действие в меню 👇",
         parse_mode="HTML",
         reply_markup=main_menu()
     )
 
     notify_admin(
-        f"💬 <b>Сообщение от клиента</b>\n\n"
-        f"👤 {user.first_name or ''} {user.last_name or ''}\n"
-        f"🔗 {username}\n"
-        f"🆔 <code>{user.id}</code>\n\n"
-        f"💬 {message.text}"
+        "💬 <b>Сообщение от клиента</b>\n\n"
+        "👤 " + str(user.first_name or "") + " " + str(user.last_name or "") + "\n"
+        "🔗 " + username + "\n"
+        "🆔 <code>" + str(user.id) + "</code>\n\n"
+        "💬 " + str(message.text)
     )
 
 
@@ -729,7 +733,7 @@ def fallback_text(message):
 
 if __name__ == "__main__":
     print("=" * 55)
-    print("  🤖  AmyStyle Pro Bot v2.0 запущен!")
+    print("  🤖  Mike Yan Bot v2.0 запущен!")
     print("  📱  Открой бота в Telegram и напиши /start")
     print("=" * 55)
     bot.infinity_polling()
